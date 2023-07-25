@@ -22,6 +22,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { FormError } from "../styles";
 import { convertTimeStringToMinutes } from "../../../utils/convert-time-string-to-minutes";
 import { api } from "../../../lib/axios";
+import { useRouter } from "next/router";
+import { NextSeo } from "next-seo";
 
 const timeIntervalsFormSchema = z.object({
   intervals: z
@@ -84,6 +86,8 @@ export default function TimeIntervals() {
 
   const weekDays = getWeekDays();
 
+  const router = useRouter()
+
   const { fields } = useFieldArray({
     control,
     name: "intervals",
@@ -93,9 +97,13 @@ export default function TimeIntervals() {
     const {intervals} = data as TimeIntervalsFormOutput
     
     await api.post('/users/time-intervals', {intervals})
+
+    await router.push('/register/update-profile')
   }
 
   return (
+    <>
+    <NextSeo title="Selecione sua disponibilidade | Ignite Call" noindex />
     <Container>
       <Header>
         <Heading as="strong">Quase lá</Heading>
@@ -118,13 +126,13 @@ export default function TimeIntervals() {
                     render={({ field }) => {
                       return (
                         <Checkbox
-                          onCheckedChange={(checked) => {
-                            field.onChange(checked === true);
-                          }}
-                          checked={field.value}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked === true);
+                        }}
+                        checked={field.value}
                         />
-                      );
-                    }}
+                        );
+                      }}
                   />
                   <Text>{weekDays[field.weekDay]}</Text>
                 </IntervalDay>
@@ -135,7 +143,7 @@ export default function TimeIntervals() {
                     step={60}
                     {...register(`intervals.${index}.startTime`)}
                     disabled={intervals[index].enabled === false}
-                  />
+                    />
                   <TextInput
                     size="sm"
                     type="time"
@@ -151,7 +159,7 @@ export default function TimeIntervals() {
 
         {errors.intervals && (
           <FormError size="sm">{errors.intervals.message}</FormError>
-        )}
+          )}
 
         <Button type="submit" disabled={isSubmitting}>
           Próximo passo
@@ -159,5 +167,6 @@ export default function TimeIntervals() {
         </Button>
       </IntervalBox>
     </Container>
+    </>
   );
 }
